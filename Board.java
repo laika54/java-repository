@@ -9,20 +9,36 @@ public class Board implements ActionListener{
 
     private int width, height;
     private String frameTitle;
+
     private JFrame frame = new JFrame();
     private JPanel panel = new JPanel();
+    private JPanel outerPanel = new JPanel();
+    private JPanel topPanel = new JPanel();
+    private JPanel rightPanel = new JPanel();
+    private JButton reset = new JButton("reset");
+    private JButton chooseLevel = new JButton("choose level");
+    private JComboBox<String> levelSelect;
+
     private GridLayout GLayout = new GridLayout(5,5);
-    //private String extention = "images\\";
-    //private String image = "RedFrog";
+    private BorderLayout BLayout = new BorderLayout();
+    private BorderLayout topBLayout = new BorderLayout();
+    private BorderLayout rightBLayout = new BorderLayout();
+
     private boolean lily = true;
+
     private File file;
     private BufferedReader br;
-    Square[] squares = new Square[25];
-    private int[] selected = {-1,-1};
-    //Square testSquare = new Square(0,0);
-    
 
-    
+    private Square[] squares = new Square[25];
+
+    private int[] selected = {-1,-1};
+
+    private int currentLevel = 0;
+
+    private String[] levels = new String[41];
+
+
+
     public Board(int w, int h, String title){
         width = w;
         height = h;
@@ -30,31 +46,47 @@ public class Board implements ActionListener{
     }
 
     public void createScreen(){
+        for (int i=0; i < 41; i++){
+            levels[i] = i+"";
+        }
+        levels[0] = "Select Level";
+        levelSelect = new JComboBox<String>(levels);
+        levelSelect.setSelectedIndex(0);
+
+        levelSelect.addActionListener(this);
+        reset.addActionListener(this);
+        chooseLevel.addActionListener(this);
+
         frame.setSize(width,height);
         frame.setTitle(frameTitle);
+        frame.setResizable(true);
         frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
-        frame.setContentPane(panel);
+        frame.setContentPane(outerPanel);
 
-        /*gotoEventBtn.setLocation(150, 150);
-        gotoEventBtn.setSize(250, 50);
-        gotoEventBtn.addActionListener(this);
-        gotoEventBtn.setText("GO TO Events");
-        mainMenuPanel.add(gotoEventBtn);*/
-        //JOptionPane.showMessageDialog(null, "pee pee poo poo");
-
-        //frame.add(panel);
+        outerPanel.setLayout(BLayout);
+        topPanel.setLayout(topBLayout);
+        rightPanel.setLayout(rightBLayout);
         panel.setLayout(GLayout);
-        //testSquare.setImage(image);
-        //panel.add(testSquare.button, GLayout);
-        
+
+        outerPanel.add(panel, BorderLayout.CENTER);
+        outerPanel.add(topPanel, BorderLayout.NORTH);
+        topPanel.add(rightPanel, BorderLayout.EAST);
+        topPanel.add(reset, BorderLayout.WEST);
+        rightPanel.add(chooseLevel, BorderLayout.CENTER);
+        rightPanel.add(levelSelect, BorderLayout.EAST);
+
         createLevel(1);
         frame.setVisible(true);
     }
 
-    public void createLevel(int level){
+    public void resetLevel(int level){
+    System.out.println("reset LEVELELLELELL");
+        currentLevel = level;
+        selected[0] = -1;
+        selected[1] = -1;
         String sqr = "";
         try{
-            file = new File("level"+level+".txt"); 
+            file = new File("levels\\finishedLevel"+level+".txt"); 
             br = new BufferedReader(new FileReader(file));
         }catch(Exception e){
             System.out.println(e);
@@ -68,7 +100,57 @@ public class Board implements ActionListener{
                     System.out.println(e);
                 }
 
-                System.out.println(sqr+"\n");
+                //System.out.println(sqr+"\n");
+                //System.out.println(level);
+
+                switch(sqr){
+                    case "r":
+                        squares[(i*5)+j].setPiece("RedFrog");
+                        squares[(i*5)+j].setImage("RedFrog");
+                        break;
+                    case "g":
+                        squares[(i*5)+j].setPiece("GreenFrog");
+                        squares[(i*5)+j].setImage("GreenFrog");
+                        break;
+                    case "w":
+                        squares[(i*5)+j].setPiece("Water");
+                        squares[(i*5)+j].setImage("Water");
+                        break;
+                    case "l":
+                        squares[(i*5)+j].setPiece("LilyPad");
+                        squares[(i*5)+j].setImage("LilyPad");
+                        break;
+                }
+
+                //panel.add(squares[(i*5)+j].getButton(), GLayout);
+                //squares[(i*5)+j].getButton().addActionListener(this);
+            }
+        }
+    }
+
+    public void createLevel(int level){
+        System.out.println("CREATE LEVELELLELELL");
+        currentLevel = level;
+        selected[0] = -1;
+        selected[1] = -1;
+        String sqr = "";
+        try{
+            file = new File("levels\\finishedLevel"+level+".txt"); 
+            br = new BufferedReader(new FileReader(file));
+        }catch(Exception e){
+            System.out.println(e);
+        }
+        for (int i = 0; i<5; i++){
+            for (int j = 0; j<5; j++){
+                
+                try{
+                    sqr = br.readLine();
+                }catch(Exception e){
+                    System.out.println(e);
+                }
+
+                //System.out.println(sqr+"\n");
+                System.out.println(level);
 
                 switch(sqr){
                     case "r":
@@ -89,8 +171,8 @@ public class Board implements ActionListener{
                         break;
                 }
 
-                panel.add(squares[(i*5)+j].button, GLayout);
-                squares[(i*5)+j].button.addActionListener(this);
+                panel.add(squares[(i*5)+j].getButton(), GLayout);
+                squares[(i*5)+j].getButton().addActionListener(this);
             }
         }
     }
@@ -125,7 +207,7 @@ public class Board implements ActionListener{
         //System.out.println(e.getSource());
         
         for (int i = 0; i<25; i++){
-            if (e.getSource() == squares[i].button){
+            if (e.getSource() == squares[i].getButton()){
                 System.out.println(squares[i].getx() + " " + squares[i].gety());
                 if(squares[i].getPiece().equals("Water") == false){
                     if (selected[0] == -1){
@@ -157,8 +239,19 @@ public class Board implements ActionListener{
             }
         }
 
+        if(e.getSource() == reset){
+            resetLevel(currentLevel);
+        }
+
+        if(e.getSource() == chooseLevel){
+            if (levelSelect.getSelectedIndex() != 0){
+                resetLevel(Integer.parseInt(levelSelect.getSelectedItem()+""));
+            }
+        }
+
         if (winner()){
             JOptionPane.showMessageDialog(null, "CATASTROPHIC ERROR:\nyou win :)");
+            resetLevel(currentLevel+1);
         }
     }
 }

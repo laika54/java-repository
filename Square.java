@@ -30,6 +30,10 @@ public class Square{
     public int gety(){
         return y;
     }
+
+    public JButton getButton(){
+        return button;
+    }
     
     public void setx(int num){
         x = num;
